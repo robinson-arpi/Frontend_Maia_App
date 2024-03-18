@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:maia_app/providers/api_provider.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key}); // Corregido el paso de la clave
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -13,24 +13,20 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final scrollController = ScrollController();
   bool isLoading = false;
-  int page = 1;
   @override
   void initState() {
     super.initState();
     final apiProvider = Provider.of<ApiProvider>(context, listen: false);
-    apiProvider.getClassSchedule(page);
+    apiProvider.getClassSchedule();
     scrollController.addListener(() async {
       if (scrollController.position.pixels ==
           scrollController.position.maxScrollExtent) {
         setState(() {
-          isLoading;
-          true;
+          isLoading = true;
         });
-        page++;
-        await apiProvider.getClassSchedule(page);
+        await apiProvider.getClassSchedule();
         setState(() {
-          isLoading;
-          false;
+          isLoading = false;
         });
       }
     });
@@ -63,10 +59,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
 class ScheduleList extends StatelessWidget {
   const ScheduleList(
-      {super.key,
+      {Key? key,
       required this.apiProvider,
       required this.scrollController,
-      required this.isLoading});
+      required this.isLoading})
+      : super(key: key);
   final ApiProvider apiProvider;
   final ScrollController scrollController;
   final bool isLoading;
@@ -96,7 +93,7 @@ class ScheduleList extends StatelessWidget {
                     children: [
                       Text(
                         class_schedule.className!,
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 16, overflow: TextOverflow.ellipsis),
                       )
                     ],

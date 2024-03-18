@@ -19,8 +19,6 @@ class ClassSchedule {
                 json["schedule"]!.map((x) => Schedule.fromJson(x))),
       );
 
-  get results => null;
-
   Map<String, dynamic> toJson() => {
         "schedule": schedule == null
             ? []
