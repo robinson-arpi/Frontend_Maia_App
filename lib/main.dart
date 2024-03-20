@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:maia_app/environment.dart';
 import 'package:maia_app/providers/api_provider.dart';
 import 'package:maia_app/src/pages/home_screen.dart';
 import 'package:maia_app/src/pages/splash_screen.dart';
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-        create: (context) => ApiProvider(),
+        create: (context) => ApiProvider(apiUrl),
         child: MaterialApp.router(
           title: 'Material App',
           debugShowMaterialGrid: false,

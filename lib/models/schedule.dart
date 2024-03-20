@@ -19,6 +19,10 @@ class ClassSchedule {
                 json["schedule"]!.map((x) => Schedule.fromJson(x))),
       );
 
+  String get startTime => "";
+
+  get className => null;
+
   Map<String, dynamic> toJson() => {
         "schedule": schedule == null
             ? []
@@ -54,7 +58,7 @@ class Schedule {
         professorLastName: json["professorLastName"],
         classroomName: json["classroomName"],
         day: json["day"],
-        startTime: json["startTime"],
+        startTime: json["startTime"], // Parsea la cadena a DateTime
         endTime: json["endTime"],
       );
 
@@ -65,7 +69,7 @@ class Schedule {
         "professorLastName": professorLastName,
         "classroomName": classroomName,
         "day": day,
-        "startTime": startTime,
+        "startTime": startTime, // Convierte DateTime
         "endTime": endTime,
       };
 }
