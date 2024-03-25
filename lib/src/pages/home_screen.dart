@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:maia_app/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:maia_app/providers/api_provider.dart';
 import 'package:maia_app/models/schedule.dart';
 import 'dart:async';
 import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -16,6 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final scrollController = ScrollController();
   bool isLoading = false;
   Schedule? nextActivity;
+  String currentDate = "";
 
   @override
   void initState() {
@@ -36,28 +39,39 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
 
+    // Actualiza la próxima actividad al inicio
+    updateNextActivity();
+    print("Luego de priemr vez");
     // Actualiza la próxima actividad cada minuto
     Timer.periodic(Duration(minutes: 1), (timer) {
       updateNextActivity();
     });
-    // Actualiza la próxima actividad al inicio
-    updateNextActivity();
+
+    // Inicializa la fecha actual
+    initializeDateFormatting();
+
+    currentDate = DateFormat('EEEE', 'es').format(DateTime.now());
   }
 
   void updateNextActivity() {
+    print("Ejecuta nex activity");
     final apiProvider = Provider.of<ApiProvider>(context, listen: false);
     final List<Schedule> schedule = apiProvider.schedule;
     final TimeOfDay now = TimeOfDay.now(); // Obtén la hora actual
     Schedule? next;
+    print(next);
     for (final activity in schedule) {
       final activityTime = TimeOfDay.fromDateTime(DateFormat('HH:mm:ss')
           .parse(activity.startTime!)); // Parsea la cadena de hora
       if (activityTime.hour > now.hour ||
           (activityTime.hour == now.hour && activityTime.minute > now.minute)) {
         next = activity;
+        print("Nueva actividad");
         break;
       }
+      print("Sin nueva actividad");
     }
+    print("Acabo");
     setState(() {
       nextActivity = next;
     });
@@ -68,10 +82,11 @@ class _HomeScreenState extends State<HomeScreen> {
     final apiProvider = Provider.of<ApiProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Horario de clases",
+        title: Text("HORARIO DE CLASES",
             style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         automaticallyImplyLeading: false,
+        backgroundColor: AppTheme.softColorA,
       ),
       body: Column(
         children: [
@@ -132,13 +147,15 @@ class NextActivityWidget extends StatelessWidget {
 
   final Schedule nextActivity;
 
+  get currentDate => null;
+
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          "Próxima actividad:",
+          "Próxima actividad: ${currentDate}",
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         Text(

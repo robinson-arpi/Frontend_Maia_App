@@ -14,7 +14,7 @@ class ApiProvider with ChangeNotifier {
   Future<void> getClassSchedule() async {
     try {
       // Realiza una solicitud HTTP GET a la URL base más la ruta específica del horario de clases
-      final result = await http.get(Uri.parse('$apiUrl/schedule/6'));
+      final result = await http.get(Uri.parse('$apiUrl/schedule/6/Lunes'));
 
       // Verifica si la solicitud fue exitosa (código de estado 200)
       if (result.statusCode == 200) {

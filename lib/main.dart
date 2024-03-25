@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:maia_app/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:maia_app/environment.dart';
 import 'package:maia_app/providers/api_provider.dart';
@@ -33,9 +34,8 @@ class MyApp extends StatelessWidget {
         child: MaterialApp.router(
           title: 'Material App',
           debugShowMaterialGrid: false,
-          theme: ThemeData(
-            useMaterial3: true,
-          ),
+          theme: AppTheme.getThemeData(), // Usa tu tema aquí
+
           routerConfig: _router,
         ));
   }
