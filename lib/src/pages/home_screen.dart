@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:maia_app/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:maia_app/providers/api_provider.dart';
@@ -8,7 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -41,28 +42,30 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Actualiza la próxima actividad al inicio
     updateNextActivity();
-    print("Luego de priemr vez");
+
     // Actualiza la próxima actividad cada minuto
-    Timer.periodic(Duration(minutes: 1), (timer) {
+    Timer.periodic(const Duration(minutes: 1), (timer) {
       updateNextActivity();
     });
 
-    // Inicializa la fecha actual
-    initializeDateFormatting();
-
+    initializeDateFormatting(); // Inicializa la fecha actual
     currentDate = DateFormat('EEEE', 'es').format(DateTime.now());
   }
 
   void updateNextActivity() {
-    print("Ejecuta nex activity");
+    if (!mounted) return; // Comprueba si el widget está montado
+
     final apiProvider = Provider.of<ApiProvider>(context, listen: false);
     final List<Schedule> schedule = apiProvider.schedule;
     final TimeOfDay now = TimeOfDay.now(); // Obtén la hora actual
     Schedule? next;
-    print(next);
+
     for (final activity in schedule) {
       final activityTime = TimeOfDay.fromDateTime(DateFormat('HH:mm:ss')
           .parse(activity.startTime!)); // Parsea la cadena de hora
+
+      print("Control");
+
       if (activityTime.hour > now.hour ||
           (activityTime.hour == now.hour && activityTime.minute > now.minute)) {
         next = activity;
@@ -71,7 +74,8 @@ class _HomeScreenState extends State<HomeScreen> {
       }
       print("Sin nueva actividad");
     }
-    print("Acabo");
+    print(next?.className);
+
     setState(() {
       nextActivity = next;
     });
@@ -81,24 +85,34 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final apiProvider = Provider.of<ApiProvider>(context);
     return Scaffold(
+      backgroundColor: AppTheme.softColorA,
       appBar: AppBar(
-        title: Text("HORARIO DE CLASES",
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          "Hola, ${apiProvider.name}",
+          style: Theme.of(context).textTheme.headlineLarge,
+        ),
         centerTitle: true,
         automaticallyImplyLeading: false,
-        backgroundColor: AppTheme.softColorA,
+        backgroundColor: AppTheme.softColorB,
       ),
       body: Column(
         children: [
-          if (nextActivity != null)
-            NextActivityWidget(nextActivity: nextActivity!),
+          // Siempre muestra el widget NextActivityWidget
+          SizedBox(
+            width: MediaQuery.of(context).size.width, // Ancho de la pantalla
+            child: NextActivityWidget(
+              nextActivity: nextActivity ??
+                  Schedule(className: "Sin próximas actividades"),
+              currentDay: currentDate,
+            ),
+          ),
           if (apiProvider.schedule.isNotEmpty)
             ScheduleTable(
               apiProvider: apiProvider,
               isLoading: isLoading,
             ),
           if (nextActivity == null && apiProvider.schedule.isEmpty)
-            Center(
+            const Center(
               child: CircularProgressIndicator(),
             ),
         ],
@@ -121,7 +135,7 @@ class ScheduleTable extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: DataTable(
-        columns: [
+        columns: const [
           DataColumn(label: Text('Clase')),
           DataColumn(label: Text('Aula')),
           DataColumn(label: Text('Hora')),
@@ -143,26 +157,79 @@ class NextActivityWidget extends StatelessWidget {
   const NextActivityWidget({
     Key? key,
     required this.nextActivity,
+    required this.currentDay,
   }) : super(key: key);
 
   final Schedule nextActivity;
+  final String currentDay;
 
-  get currentDate => null;
+  void _map(BuildContext context) async {
+    try {
+      context.go('/map');
+    } catch (error) {
+      // Manejar cualquier error que pueda ocurrir durante la autenticación
+      print('Error durante la autenticación: $error');
+      // Mostrar un mensaje de error al usuario, por ejemplo:
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error map')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          "Próxima actividad: ${currentDate}",
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        Text(
-          "${nextActivity.className} - ${nextActivity.startTime} - ${nextActivity.endTime}",
-          style: TextStyle(fontSize: 18),
-        ),
-      ],
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white, // Color de fondo blanco
+        borderRadius: BorderRadius.circular(10), // Esquinas redondeadas
+      ),
+      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.all(10),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Próxima actividad",
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            "Día: $currentDay",
+            style: const TextStyle(fontSize: 18),
+          ),
+          Text(
+            "${nextActivity.className} - ${nextActivity.startTime} - ${nextActivity.endTime}",
+            style: const TextStyle(fontSize: 18),
+          ),
+          ElevatedButton(
+            onPressed: () => _map(context),
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all<Color>(
+                  AppTheme.strongColorA), // Fondo del botón azul
+              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.circular(10), // Bordes menos redondeados
+                ),
+              ),
+              overlayColor: MaterialStateProperty.resolveWith<Color?>(
+                (Set<MaterialState> states) {
+                  if (states.contains(MaterialState.pressed)) {
+                    return AppTheme.strongColorA
+                        .withOpacity(0.5); // Color de sombreado al presionar
+                  }
+                  return null; // No hay sombreado en otros estados
+                },
+              ),
+            ),
+            child: const Text(
+              'Guía',
+              style: TextStyle(
+                  color: AppTheme.softColorB), // Color de texto blanco
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
