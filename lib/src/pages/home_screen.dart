@@ -107,10 +107,14 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           if (apiProvider.schedule.isNotEmpty)
-            ScheduleTable(
-              apiProvider: apiProvider,
-              isLoading: isLoading,
+            SizedBox(
+              width: MediaQuery.of(context).size.width,
+              child: ScheduleTable(
+                apiProvider: apiProvider,
+                isLoading: isLoading,
+              ),
             ),
+
           if (nextActivity == null && apiProvider.schedule.isEmpty)
             const Center(
               child: CircularProgressIndicator(),
@@ -133,7 +137,13 @@ class ScheduleTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.softColorB,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.all(10),
       child: DataTable(
         columns: const [
           DataColumn(label: Text('Clase')),

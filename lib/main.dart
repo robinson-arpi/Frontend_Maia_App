@@ -52,6 +52,8 @@ class MyApp extends StatelessWidget {
         create: (context) => ApiProvider(apiUrl),
         child: MaterialApp.router(
           title: 'Material App',
+          locale: const Locale(
+              'es', 'ES'), // Establecer localización en español (España)
           debugShowMaterialGrid: false,
           theme: ThemeData(
             // Utiliza el tema personalizado definido en AppTheme

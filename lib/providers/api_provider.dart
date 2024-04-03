@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:maia_app/models/node.dart';
 import 'package:maia_app/models/schedule.dart';
+import 'package:maia_app/models/path.dart';
 import 'package:http/http.dart' as http;
 
 class ApiProvider with ChangeNotifier {
@@ -9,15 +11,39 @@ class ApiProvider with ChangeNotifier {
   int id = -1;
   String name = "NoName";
   List<Schedule> schedule = [];
+  List<Node> nodes = [];
+  List<Path> path = [];
+  //Node origin;
+  //Node destination;
 
   // Constructor que recibe la URL base como parámetro
   ApiProvider(this.apiUrl);
+
+  Future<void> getNodes() async {
+    try {
+      // Realiza una solicitud HTTP GET a la URL base más la ruta específica del horario de clases
+      final result = await http.get(Uri.parse('$apiUrl/graph/nodes'));
+
+      // Verifica si la solicitud fue exitosa (código de estado 200)
+      if (result.statusCode == 200) {
+        // Parsea la respuesta JSON y la asigna a la lista de horarios de clases
+        final response = nodeFromJson(result.body);
+        nodes = response.nodes ?? [];
+        // Notifica a los oyentes (listeners) que los datos han sido actualizados
+        notifyListeners();
+      } else {
+        throw Exception('Error en la solicitud HTTP: ${result.statusCode}');
+      }
+    } catch (error) {
+      print('Error en la solicitud HTTP: $error');
+    }
+  }
 
   // Método para obtener el horario de clases
   Future<void> getClassSchedule() async {
     try {
       // Realiza una solicitud HTTP GET a la URL base más la ruta específica del horario de clases
-      final result = await http.get(Uri.parse('$apiUrl/schedule/$id/Lunes'));
+      final result = await http.get(Uri.parse('$apiUrl/schedule/$id/Martes'));
 
       // Verifica si la solicitud fue exitosa (código de estado 200)
       if (result.statusCode == 200) {
@@ -69,6 +95,29 @@ class ApiProvider with ChangeNotifier {
     } catch (error) {
       // Maneja cualquier error que pueda ocurrir durante la solicitud HTTP
       throw Exception('Error durante la solicitud HTTP: $error');
+    }
+  }
+
+  Future<void> getPath(int start, int end) async {
+    try {
+      // Realiza una solicitud HTTP GET a la URL base más la ruta específica del horario de clases
+      final result =
+          await http.get(Uri.parse('$apiUrl/graph/shortestPath/$start/$end'));
+
+      // Verifica si la solicitud fue exitosa (código de estado 200)
+      if (result.statusCode == 200) {
+        // Parsea la respuesta JSON y la asigna a la lista de horarios de clases
+        final response = pathFromJson(result.body);
+        path = response;
+        // Notifica a los oyentes (listeners) que los datos han sido actualizados
+        notifyListeners();
+      } else {
+        // Si la solicitud no fue exitosa, lanza una excepción con el código de estado
+        throw Exception('Error en la solicitud HTTP: ${result.statusCode}');
+      }
+    } catch (error) {
+      // Captura cualquier error que ocurra durante la solicitud HTTP
+      print('Error en la solicitud HTTP: $error');
     }
   }
 }
