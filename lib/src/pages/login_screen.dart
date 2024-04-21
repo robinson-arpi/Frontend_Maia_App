@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:maia_app/providers/api_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:maia_app/theme/app_theme.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -12,6 +13,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final FlutterSecureStorage _storage = FlutterSecureStorage();
   late TextEditingController emailController;
   late TextEditingController passwordController;
   late ApiProvider apiProvider;
@@ -21,6 +23,20 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
     emailController = TextEditingController();
     passwordController = TextEditingController();
+
+    // Verificar si existen credenciales guardadas y realizar inicio de sesión automático
+    checkAutoLogin();
+  }
+
+  void checkAutoLogin() async {
+    final email = await _storage.read(key: 'email');
+    final password = await _storage.read(key: 'password');
+    if (email != null && password != null) {
+      // Intentar iniciar sesión automáticamente
+      await apiProvider.login(email, password);
+      // Navegar a la pantalla de inicio si el inicio de sesión automático es exitoso
+      context.go('/home');
+    }
   }
 
   @override

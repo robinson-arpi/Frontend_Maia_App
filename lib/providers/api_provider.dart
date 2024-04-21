@@ -1,10 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:maia_app/models/node.dart';
 import 'package:maia_app/models/schedule.dart';
 import 'package:maia_app/models/path.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ApiProvider with ChangeNotifier {
   final String apiUrl; // URL base para la API
@@ -13,8 +16,18 @@ class ApiProvider with ChangeNotifier {
   List<Schedule> schedule = [];
   List<Node> nodes = [];
   List<Path> path = [];
-  //Node origin;
-  //Node destination;
+  String currentDay = getDay();
+
+  //Details about activity
+  int? startNodeId;
+  int? endNodeId;
+  Schedule? nextActivity;
+
+  // Atributo para el estado de autenticación
+  bool _isLoggedIn = false;
+  // Métodos para obtener el estado de autenticación
+  bool get isLoggedIn => _isLoggedIn;
+  final FlutterSecureStorage _storage = FlutterSecureStorage();
 
   // Constructor que recibe la URL base como parámetro
   ApiProvider(this.apiUrl);
@@ -43,7 +56,8 @@ class ApiProvider with ChangeNotifier {
   Future<void> getClassSchedule() async {
     try {
       // Realiza una solicitud HTTP GET a la URL base más la ruta específica del horario de clases
-      final result = await http.get(Uri.parse('$apiUrl/schedule/$id/Martes'));
+      final result =
+          await http.get(Uri.parse('$apiUrl/schedule/$id/$currentDay'));
 
       // Verifica si la solicitud fue exitosa (código de estado 200)
       if (result.statusCode == 200) {
@@ -83,6 +97,14 @@ class ApiProvider with ChangeNotifier {
         if (data.containsKey('id')) {
           id = data['id'];
           name = data['name'];
+
+          // Guardar las credenciales de manera segura
+          await _storage.write(key: 'email', value: email);
+          await _storage.write(key: 'password', value: password);
+
+          _isLoggedIn = true;
+          notifyListeners();
+
           //print("ID encontrado: $id --- $name");
         } else {
           print("No se encontró el campo 'id' en la respuesta.");
@@ -96,6 +118,13 @@ class ApiProvider with ChangeNotifier {
       // Maneja cualquier error que pueda ocurrir durante la solicitud HTTP
       throw Exception('Error durante la solicitud HTTP: $error');
     }
+  }
+
+  void logout() {
+    // Lógica de cierre de sesión aquí
+    // Actualiza el estado de autenticación
+    _isLoggedIn = false;
+    notifyListeners();
   }
 
   Future<void> getPath(int start, int end) async {
@@ -120,4 +149,11 @@ class ApiProvider with ChangeNotifier {
       print('Error en la solicitud HTTP: $error');
     }
   }
+}
+
+String getDay() {
+  initializeDateFormatting(); // Inicializa la fecha actual
+  String day = DateFormat('EEEE', 'es').format(DateTime.now());
+  //return day[0].toUpperCase() + day.substring(1);
+  return "Martes";
 }

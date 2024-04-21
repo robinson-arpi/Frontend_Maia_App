@@ -6,10 +6,12 @@ import 'package:maia_app/providers/api_provider.dart';
 import 'package:maia_app/models/schedule.dart';
 import 'dart:async';
 import 'package:intl/intl.dart';
-import 'package:intl/date_symbol_data_local.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:flutter_tts/flutter_tts.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({Key? key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -21,11 +23,19 @@ class _HomeScreenState extends State<HomeScreen> {
   Schedule? nextActivity;
   String currentDate = "";
 
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
+  FlutterTts flutterTts = FlutterTts();
+  late ApiProvider apiProvider;
+
+  bool isFirstTime = true;
+
   @override
   void initState() {
     super.initState();
-    final apiProvider = Provider.of<ApiProvider>(context, listen: false);
+    apiProvider = Provider.of<ApiProvider>(context, listen: false);
     apiProvider.getClassSchedule();
+
     scrollController.addListener(() async {
       if (scrollController.position.pixels ==
           scrollController.position.maxScrollExtent) {
@@ -48,36 +58,88 @@ class _HomeScreenState extends State<HomeScreen> {
       updateNextActivity();
     });
 
-    initializeDateFormatting(); // Inicializa la fecha actual
-    currentDate = DateFormat('EEEE', 'es').format(DateTime.now());
+    _speech = stt.SpeechToText();
   }
 
-  void updateNextActivity() {
-    if (!mounted) return; // Comprueba si el widget está montado
+  void _listen() async {
+    if (!_isListening) {
+      bool available = await _speech.initialize(
+        onStatus: (val) => print('onStatus: $val'),
+        onError: (val) => print('onError: $val'),
+      );
+      if (available) {
+        setState(() => _isListening = true);
+        _speech.listen(
+          onResult: (val) {
+            if (val.recognizedWords.toLowerCase().contains("cómo llegar")) {
+              print(val.recognizedWords.toLowerCase());
+              _speech.stop();
+              setState(() => _isListening = false);
+              context.go('/map');
+            } else if (val.recognizedWords
+                .toLowerCase()
+                .contains("siguiente actividad")) {
+              _speech.stop();
+              setState(() => _isListening = false);
+              _speakNextActivityDetails();
+            }
+          },
+        );
+      }
+    } else {
+      setState(() => _isListening = false);
+      _speech.stop();
+    }
+  }
+
+  void _speakNextActivityDetails() {
+    if (nextActivity != null) {
+      String message =
+          "La próxima actividad es ${apiProvider.nextActivity!.className}";
+      _speak(message);
+    } else {
+      _speak("No hay próxima actividad.");
+    }
+  }
+
+  void _speak(String message) {
+    flutterTts.speak(message);
+    print("---------------------");
+    print(message);
+  }
+
+  Future<void> updateNextActivity() async {
+    if (!mounted) return; // Verificar si el widget aún está montado
 
     final apiProvider = Provider.of<ApiProvider>(context, listen: false);
     final List<Schedule> schedule = apiProvider.schedule;
-    final TimeOfDay now = TimeOfDay.now(); // Obtén la hora actual
+
+    if (isFirstTime) {
+      print("Waiting...");
+      await Future.delayed(const Duration(milliseconds: 500));
+      isFirstTime = false;
+    }
+
+    final TimeOfDay now = TimeOfDay(hour: 6, minute: 30);
+
     Schedule? next;
 
     for (final activity in schedule) {
-      final activityTime = TimeOfDay.fromDateTime(DateFormat('HH:mm:ss')
-          .parse(activity.startTime!)); // Parsea la cadena de hora
-
-      print("Control");
+      final activityTime = TimeOfDay.fromDateTime(
+          DateFormat('HH:mm:ss').parse(activity.startTime!));
 
       if (activityTime.hour > now.hour ||
           (activityTime.hour == now.hour && activityTime.minute > now.minute)) {
         next = activity;
-        print("Nueva actividad");
         break;
       }
-      print("Sin nueva actividad");
+      print("No new activity");
     }
     print(next?.className);
 
     setState(() {
       nextActivity = next;
+      print("-------------------\nSetting new activity");
     });
   }
 
@@ -89,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text(
           "Hola, ${apiProvider.name}",
-          style: Theme.of(context).textTheme.headlineLarge,
+          style: Theme.of(context).textTheme.headline6,
         ),
         centerTitle: true,
         automaticallyImplyLeading: false,
@@ -97,14 +159,24 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
-          // Siempre muestra el widget NextActivityWidget
-          SizedBox(
-            width: MediaQuery.of(context).size.width, // Ancho de la pantalla
-            child: NextActivityWidget(
-              nextActivity: nextActivity ??
-                  Schedule(className: "Sin próximas actividades"),
-              currentDay: currentDate,
-            ),
+          FutureBuilder(
+            future: updateNextActivity(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(
+                    //child: CircularProgressIndicator(),
+                    );
+              } else {
+                return SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  child: NextActivityWidget(
+                    nextActivity: nextActivity ??
+                        Schedule(className: "Sin próximas actividades"),
+                    currentDay: apiProvider.currentDay,
+                  ),
+                );
+              }
+            },
           ),
           if (apiProvider.schedule.isNotEmpty)
             SizedBox(
@@ -114,14 +186,25 @@ class _HomeScreenState extends State<HomeScreen> {
                 isLoading: isLoading,
               ),
             ),
-
           if (nextActivity == null && apiProvider.schedule.isEmpty)
             const Center(
               child: CircularProgressIndicator(),
             ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _listen,
+        child: Icon(_isListening ? Icons.mic : Icons.mic_none),
+      ),
     );
+  }
+
+  @override
+  void dispose() {
+    if (_isListening) {
+      _speech.stop();
+    }
+    super.dispose();
   }
 }
 
@@ -177,11 +260,9 @@ class NextActivityWidget extends StatelessWidget {
     try {
       context.go('/map');
     } catch (error) {
-      // Manejar cualquier error que pueda ocurrir durante la autenticación
-      print('Error durante la autenticación: $error');
-      // Mostrar un mensaje de error al usuario, por ejemplo:
+      print('Error during navigation: $error');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error map')),
+        const SnackBar(content: Text('Error navigating')),
       );
     }
   }
@@ -190,8 +271,8 @@ class NextActivityWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white, // Color de fondo blanco
-        borderRadius: BorderRadius.circular(10), // Esquinas redondeadas
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
       ),
       padding: const EdgeInsets.all(20),
       margin: const EdgeInsets.all(10),
@@ -214,28 +295,25 @@ class NextActivityWidget extends StatelessWidget {
           ElevatedButton(
             onPressed: () => _map(context),
             style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all<Color>(
-                  AppTheme.strongColorA), // Fondo del botón azul
+              backgroundColor:
+                  MaterialStateProperty.all<Color>(AppTheme.strongColorA),
               shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                 RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(10), // Bordes menos redondeados
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
               overlayColor: MaterialStateProperty.resolveWith<Color?>(
                 (Set<MaterialState> states) {
                   if (states.contains(MaterialState.pressed)) {
-                    return AppTheme.strongColorA
-                        .withOpacity(0.5); // Color de sombreado al presionar
+                    return AppTheme.strongColorA.withOpacity(0.5);
                   }
-                  return null; // No hay sombreado en otros estados
+                  return null;
                 },
               ),
             ),
             child: const Text(
               'Guía',
-              style: TextStyle(
-                  color: AppTheme.softColorB), // Color de texto blanco
+              style: TextStyle(color: AppTheme.softColorB),
             ),
           ),
         ],

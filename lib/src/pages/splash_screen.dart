@@ -42,14 +42,6 @@ class _SplashScreenState extends State<SplashScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  ListTile(
-                    titleTextStyle: TextStyle(color: Colors.white),
-                    title: Text(
-                      "Habla prro",
-                      style: TextStyle(fontSize: 16),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
                   SizedBox(height: 20),
                   CircularProgressIndicator(
                     color: Colors.indigo,

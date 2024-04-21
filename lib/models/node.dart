@@ -18,8 +18,7 @@ class Nodes {
   factory Nodes.fromJson(Map<String, dynamic> json) => Nodes(
         nodes: json["nodes"] == null
             ? []
-            : List<Node>.from(
-                json["nodes"]!.map((x) => Node.fromJson(x))),
+            : List<Node>.from(json["nodes"]!.map((x) => Node.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
@@ -30,11 +29,11 @@ class Nodes {
 }
 
 class Node {
-  int? nodeId;
+  int nodeId;
   String? name;
 
   Node({
-    this.nodeId,
+    required this.nodeId,
     this.name,
   });
 
