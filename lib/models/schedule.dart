@@ -53,7 +53,7 @@ class Schedule {
 
   factory Schedule.fromJson(Map<String, dynamic> json) => Schedule(
         scheduleId: json["scheduleId"],
-        className: json["className"],
+        className: utf8.decode(json["className"].runes.toList()),
         professorFirstName: json["professorFirstName"],
         professorLastName: json["professorLastName"],
         classroomName: json["classroomName"],

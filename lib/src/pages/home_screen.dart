@@ -22,43 +22,39 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isLoading = false;
   Schedule? nextActivity;
   String currentDate = "";
-
   late stt.SpeechToText _speech;
   bool _isListening = false;
   FlutterTts flutterTts = FlutterTts();
   late ApiProvider apiProvider;
-
   bool isFirstTime = true;
+
+  // Stream para la hora actual
+  late Stream<DateTime> _clockStream;
 
   @override
   void initState() {
     super.initState();
     apiProvider = Provider.of<ApiProvider>(context, listen: false);
-    apiProvider.getClassSchedule();
-
-    scrollController.addListener(() async {
-      if (scrollController.position.pixels ==
-          scrollController.position.maxScrollExtent) {
-        setState(() {
-          isLoading = true;
-        });
-
-        await apiProvider.getClassSchedule();
-        setState(() {
-          isLoading = false;
-        });
-      }
+    _speech = stt.SpeechToText();
+    apiProvider.getClassSchedule().then((_) {
+      updateNextActivity();
     });
-
-    // Actualiza la próxima actividad al inicio
-    updateNextActivity();
-
     // Actualiza la próxima actividad cada minuto
-    Timer.periodic(const Duration(minutes: 1), (timer) {
+    Timer.periodic(const Duration(minutes: 1), (_) {
       updateNextActivity();
     });
 
-    _speech = stt.SpeechToText();
+    // Crear el Stream para la hora actual una vez
+    _clockStream =
+        Stream<DateTime>.periodic(Duration(seconds: 1), (_) => DateTime.now());
+  }
+
+  @override
+  void dispose() {
+    if (_isListening) {
+      _speech.stop();
+    }
+    super.dispose();
   }
 
   void _listen() async {
@@ -93,12 +89,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _speakNextActivityDetails() {
-    if (nextActivity != null) {
-      String message =
-          "La próxima actividad es ${apiProvider.nextActivity!.className}";
-      _speak(message);
-    } else {
-      _speak("No hay próxima actividad.");
+    if (mounted) {
+      if (nextActivity != null) {
+        String message = "La próxima actividad es ${nextActivity!.className}";
+        _speak(message);
+      } else {
+        _speak("No hay próxima actividad.");
+      }
     }
   }
 
@@ -159,24 +156,14 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
-          FutureBuilder(
-            future: updateNextActivity(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(
-                    //child: CircularProgressIndicator(),
-                    );
-              } else {
-                return SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  child: NextActivityWidget(
-                    nextActivity: nextActivity ??
-                        Schedule(className: "Sin próximas actividades"),
-                    currentDay: apiProvider.currentDay,
-                  ),
-                );
-              }
-            },
+          SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: NextActivityWidget(
+              nextActivity: nextActivity ??
+                  Schedule(className: "Sin próximas actividades"),
+              currentDay: apiProvider.currentDay,
+              clockStream: _clockStream, // Pasar el Stream al widget
+            ),
           ),
           if (apiProvider.schedule.isNotEmpty)
             SizedBox(
@@ -187,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           if (nextActivity == null && apiProvider.schedule.isEmpty)
-            const Center(
+            Center(
               child: CircularProgressIndicator(),
             ),
         ],
@@ -197,14 +184,6 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Icon(_isListening ? Icons.mic : Icons.mic_none),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    if (_isListening) {
-      _speech.stop();
-    }
-    super.dispose();
   }
 }
 
@@ -251,10 +230,12 @@ class NextActivityWidget extends StatelessWidget {
     Key? key,
     required this.nextActivity,
     required this.currentDay,
+    required this.clockStream,
   }) : super(key: key);
 
   final Schedule nextActivity;
   final String currentDay;
+  final Stream<DateTime> clockStream;
 
   void _map(BuildContext context) async {
     try {
@@ -277,7 +258,6 @@ class NextActivityWidget extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       margin: const EdgeInsets.all(10),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
@@ -291,6 +271,42 @@ class NextActivityWidget extends StatelessWidget {
           Text(
             "${nextActivity.className} - ${nextActivity.startTime} - ${nextActivity.endTime}",
             style: const TextStyle(fontSize: 18),
+          ),
+          // Widget para mostrar la hora actual
+          // Widget para mostrar el tiempo restante antes de que comience la próxima actividad
+          StreamBuilder<DateTime>(
+            stream: clockStream,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                final now = snapshot.data!;
+                final currentDateTime = DateTime(now.year, now.month, now.day,
+                    now.hour, now.minute, now.second);
+                final activityTime =
+                    DateFormat('HH:mm:ss').parse(nextActivity.startTime!);
+
+                final activityStartTime = DateTime(
+                    currentDateTime.year,
+                    currentDateTime.month,
+                    currentDateTime.day,
+                    activityTime.hour,
+                    activityTime.minute,
+                    activityTime.second);
+
+                final difference =
+                    activityStartTime.difference(currentDateTime).abs();
+
+                final hours = 23 - difference.inHours;
+                final minutes = 59 - difference.inMinutes.remainder(60);
+                final seconds = 59 - difference.inSeconds.remainder(60);
+
+                return Text(
+                  "Tiempo restante: $hours horas $minutes minutos $seconds segundos",
+                  style: const TextStyle(fontSize: 18),
+                );
+              } else {
+                return const SizedBox(); // O cualquier otro widget que desees mostrar cuando no haya datos disponibles
+              }
+            },
           ),
           ElevatedButton(
             onPressed: () => _map(context),
