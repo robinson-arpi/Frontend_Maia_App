@@ -68,13 +68,12 @@ class _HomeScreenState extends State<HomeScreen> {
         _speech.listen(
           onResult: (val) {
             if (val.recognizedWords.toLowerCase().contains("cómo llegar")) {
-              print(val.recognizedWords.toLowerCase());
               _speech.stop();
               setState(() => _isListening = false);
               context.go('/map');
             } else if (val.recognizedWords
                 .toLowerCase()
-                .contains("siguiente actividad")) {
+                .contains("próxima actividad")) {
               _speech.stop();
               setState(() => _isListening = false);
               _speakNextActivityDetails();
@@ -91,7 +90,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void _speakNextActivityDetails() {
     if (mounted) {
       if (nextActivity != null) {
-        String message = "La próxima actividad es ${nextActivity!.className}";
+        String message =
+            "La próxima actividad es ${nextActivity!.className} en el aula ${nextActivity!.classroomName} y empieza a las ${nextActivity!.startTime}";
         _speak(message);
       } else {
         _speak("No hay próxima actividad.");
@@ -101,8 +101,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _speak(String message) {
     flutterTts.speak(message);
-    print("---------------------");
-    print(message);
   }
 
   Future<void> updateNextActivity() async {
@@ -272,6 +270,14 @@ class NextActivityWidget extends StatelessWidget {
             "${nextActivity.className} - ${nextActivity.startTime} - ${nextActivity.endTime}",
             style: const TextStyle(fontSize: 18),
           ),
+          Text(
+            "Profesor(a): ${nextActivity.professorFirstName} ${nextActivity.professorLastName}",
+            style: const TextStyle(fontSize: 18),
+          ),
+          Text(
+            "Aula: ${nextActivity.classroomName}",
+            style: const TextStyle(fontSize: 18),
+          ),
           // Widget para mostrar la hora actual
           // Widget para mostrar el tiempo restante antes de que comience la próxima actividad
           StreamBuilder<DateTime>(
@@ -304,7 +310,10 @@ class NextActivityWidget extends StatelessWidget {
                   style: const TextStyle(fontSize: 18),
                 );
               } else {
-                return const SizedBox(); // O cualquier otro widget que desees mostrar cuando no haya datos disponibles
+                return const Text(
+                  "No se han cargado datos aún",
+                  style: const TextStyle(fontSize: 18),
+                );
               }
             },
           ),
