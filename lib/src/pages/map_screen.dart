@@ -4,7 +4,7 @@ import 'package:maia_app/providers/api_provider.dart';
 import 'package:maia_app/models/node.dart';
 import 'package:maia_app/theme/app_theme.dart';
 import 'package:maia_app/widgets/NextActivityDetailWidget.dart';
-import 'package:maia_app/widgets/NextActivityDetailsWidget.dart';
+//import 'package:maia_app/widgets/NextActivityDetailsWidget.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+//import 'package:go_router/go_router.dart';
 import 'package:maia_app/theme/app_theme.dart';
 import 'package:maia_app/widgets/NextActivityWidget.dart';
 import 'package:maia_app/widgets/ScheduleTable.dart';
@@ -8,14 +8,14 @@ import 'package:maia_app/providers/api_provider.dart';
 import 'package:maia_app/models/schedule.dart';
 import 'dart:async';
 import 'package:intl/intl.dart';
-import 'package:speech_to_text/speech_recognition_result.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
+//import 'package:speech_to_text/speech_recognition_result.dart';
+//import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:maia_app/monitoring/informationGathering.dart';
 import 'package:maia_app/monitoring/interactionMiddelware.dart';
 import 'package:volume_watcher/volume_watcher.dart';
 import 'package:light/light.dart';
-import 'package:maia_app/monitoring/preventiveSecurity.dart';
+//import 'package:maia_app/monitoring/preventiveSecurity.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -35,9 +35,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final InteractionGathering _interactionGathering = InteractionGathering();
   final InteractionController _interactionController = InteractionController();
-  final PreventiveSecurity _preventiveSecurity = PreventiveSecurity();
+  //final PreventiveSecurity _preventiveSecurity = PreventiveSecurity();
 
-  late BuildContext _ancestorContext;
+  //late BuildContext _ancestorContext;
   double currentVolume = 0.0;
   double initVolume = 0.0;
   double maxVolume = 0.0;
@@ -49,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _ancestorContext = context;
+    //_ancestorContext = context;
   }
 
   @override

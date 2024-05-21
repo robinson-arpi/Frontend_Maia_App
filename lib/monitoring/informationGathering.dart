@@ -1,10 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:maia_app/monitoring/interactionMiddelware.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
-import 'package:volume_watcher/volume_watcher.dart';
-import 'package:light/light.dart';
-import 'dart:async';
-import 'package:sqflite/sqflite.dart';
 import 'package:maia_app/monitoring/storage.dart';
 import 'package:maia_app/monitoring/preventiveSecurity.dart';
 

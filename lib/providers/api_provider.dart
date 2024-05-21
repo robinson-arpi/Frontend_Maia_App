@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+//import 'package:intl/intl.dart';
 import 'package:maia_app/models/node.dart';
 import 'package:maia_app/models/schedule.dart';
 import 'package:maia_app/models/path.dart';
@@ -154,7 +154,7 @@ class ApiProvider with ChangeNotifier {
 
 String getDay() {
   initializeDateFormatting(); // Inicializa la fecha actual
-  String day = DateFormat('EEEE', 'es').format(DateTime.now());
+  //String day = DateFormat('EEEE', 'es').format(DateTime.now());
   //return day[0].toUpperCase() + day.substring(1);
   return "Martes";
 }

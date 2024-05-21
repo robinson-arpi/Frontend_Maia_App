@@ -3,14 +3,14 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:maia_app/models/schedule.dart';
 import 'package:maia_app/monitoring/preventiveSecurity.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
+//import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 abstract class Observer {
   void update(String type, String action, List<dynamic> parameters);
 }
 
 class InteractionController implements Observer {
-  stt.SpeechToText _speech = stt.SpeechToText();
+  //stt.SpeechToText _speech = stt.SpeechToText();
   FlutterTts flutterTts = FlutterTts();
 
   @override
