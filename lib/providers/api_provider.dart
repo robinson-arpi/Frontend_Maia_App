@@ -68,7 +68,8 @@ class ApiProvider with ChangeNotifier {
         notifyListeners();
       } else {
         // Si la solicitud no fue exitosa, lanza una excepción con el código de estado
-        throw Exception('Error en la solicitud HTTP: ${result.statusCode}');
+        throw Exception(
+            'Error en la solicitud HTTP get schedule: ${result.statusCode}');
       }
     } catch (error) {
       // Captura cualquier error que ocurra durante la solicitud HTTP

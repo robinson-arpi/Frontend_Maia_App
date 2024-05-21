@@ -16,33 +16,12 @@ class _LoginScreenState extends State<LoginScreen> {
   final FlutterSecureStorage _storage = FlutterSecureStorage();
   late TextEditingController emailController;
   late TextEditingController passwordController;
-  late ApiProvider apiProvider;
 
   @override
   void initState() {
     super.initState();
     emailController = TextEditingController();
     passwordController = TextEditingController();
-
-    // Verificar si existen credenciales guardadas y realizar inicio de sesión automático
-    checkAutoLogin();
-  }
-
-  void checkAutoLogin() async {
-    final email = await _storage.read(key: 'email');
-    final password = await _storage.read(key: 'password');
-    if (email != null && password != null) {
-      // Intentar iniciar sesión automáticamente
-      await apiProvider.login(email, password);
-      // Navegar a la pantalla de inicio si el inicio de sesión automático es exitoso
-      context.go('/home');
-    }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    apiProvider = Provider.of<ApiProvider>(context);
   }
 
   void _login(BuildContext context) async {
@@ -50,11 +29,14 @@ class _LoginScreenState extends State<LoginScreen> {
     final String password = passwordController.text;
 
     try {
+      final apiProvider = Provider.of<ApiProvider>(context, listen: false);
       await apiProvider.login(email, password);
+      await _storage.write(key: 'email', value: email);
+      await _storage.write(key: 'password', value: password);
+      await apiProvider.getClassSchedule();
+
       context.go('/home');
     } catch (error) {
-      // Manejar cualquier error que pueda ocurrir durante la autenticación
-      print('Error durante la autenticación: $error');
       // Mostrar un mensaje de error al usuario, por ejemplo:
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error de autenticación')),
@@ -84,13 +66,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 labelStyle: Theme.of(context).textTheme.headlineSmall,
                 focusedBorder: const UnderlineInputBorder(
                   borderSide: BorderSide(color: AppTheme.strongColorA),
-                  // Color de la línea cuando el campo está enfocado
                 ),
                 hoverColor: AppTheme.strongColorA,
               ),
-
-              cursorColor:
-                  AppTheme.strongColorA, // Cambia el color del cursor aquí
+              cursorColor: AppTheme.strongColorA,
             ),
             const SizedBox(height: 20),
             TextField(
@@ -100,7 +79,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 labelStyle: Theme.of(context).textTheme.headlineSmall,
                 focusedBorder: const UnderlineInputBorder(
                   borderSide: BorderSide(color: AppTheme.strongColorA),
-                  // Color de la línea cuando el campo está enfocado
                 ),
                 hoverColor: AppTheme.strongColorA,
               ),
@@ -110,28 +88,25 @@ class _LoginScreenState extends State<LoginScreen> {
             ElevatedButton(
               onPressed: () => _login(context),
               style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color>(
-                    AppTheme.strongColorA), // Fondo del botón azul
+                backgroundColor:
+                    MaterialStateProperty.all<Color>(AppTheme.strongColorA),
                 shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                   RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(10), // Bordes menos redondeados
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 overlayColor: MaterialStateProperty.resolveWith<Color?>(
                   (Set<MaterialState> states) {
                     if (states.contains(MaterialState.pressed)) {
-                      return AppTheme.strongColorA
-                          .withOpacity(0.5); // Color de sombreado al presionar
+                      return AppTheme.strongColorA.withOpacity(0.5);
                     }
-                    return null; // No hay sombreado en otros estados
+                    return null;
                   },
                 ),
               ),
               child: const Text(
                 'Iniciar sesión',
-                style: TextStyle(
-                    color: AppTheme.softColorB), // Color de texto blanco
+                style: TextStyle(color: AppTheme.softColorB),
               ),
             ),
           ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:maia_app/models/schedule.dart';
 import 'package:maia_app/src/pages/map_screen.dart';
 import 'package:maia_app/theme/app_theme.dart';
 import 'package:provider/provider.dart';
@@ -35,7 +36,10 @@ final GoRouter _router = GoRouter(
         GoRoute(
           path: 'map',
           builder: (context, state) {
-            return const MapScreen();
+            final nextActivity = state.extra as Schedule;
+            return MapScreen(
+              nextActivity: nextActivity,
+            );
           },
         ),
       ],
