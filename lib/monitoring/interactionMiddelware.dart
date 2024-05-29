@@ -1,20 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:maia_app/models/schedule.dart';
 import 'package:maia_app/monitoring/preventiveSecurity.dart';
+import 'package:maia_app/monitoring/storage.dart';
 //import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 abstract class Observer {
-  void update(String type, String action, List<dynamic> parameters);
+  void update(
+      String type, String action, double value, List<dynamic> parameters);
 }
 
 class InteractionController implements Observer {
   //stt.SpeechToText _speech = stt.SpeechToText();
   FlutterTts flutterTts = FlutterTts();
+  PreventiveSecurity _preventiveSecurity = PreventiveSecurity();
 
   @override
-  void update(String type, String action, List<dynamic> parameters) {
+  void update(
+      String type, String action, double value, List<dynamic> parameters) {
+    _logInteraction(type, action, value);
+
     switch (type) {
       case 'GUI':
         _handleGUIAction(action, parameters);
@@ -67,11 +74,9 @@ class InteractionController implements Observer {
   }
 
   void _handleVolumeChange(double volume) {
-    PreventiveSecurity _preventiveSecurity = PreventiveSecurity();
-    if (volume > 0.8) {
-      _preventiveSecurity.showVolumeWarningToast();
-    }
-    print("El volumen ha cambiado: $volume");
+    _preventiveSecurity.volumeSecurity(volume, 0.8);
+
+    // print("El volumen ha cambiado: $volume");
   }
 
   void _handleLightChange(int luxValue) {
@@ -106,5 +111,10 @@ class InteractionController implements Observer {
 
   void speak(String message) {
     flutterTts.speak(message);
+  }
+
+  void _logInteraction(String type, String action, double valor) async {
+    final int timestamp = DateTime.now().millisecondsSinceEpoch;
+    await Storage.insertInteraction(type, action, valor, timestamp);
   }
 }

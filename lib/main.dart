@@ -36,10 +36,22 @@ final GoRouter _router = GoRouter(
         GoRoute(
           path: 'map',
           builder: (context, state) {
-            final nextActivity = state.extra as Schedule;
-            return MapScreen(
-              nextActivity: nextActivity,
-            );
+            try {
+              final nextActivity = state.extra as Schedule;
+              return MapScreen(
+                nextActivity: nextActivity,
+              );
+            } catch (e) {
+              // Manejar el error de carga de página aquí
+              print('Error al cargar la página de mapa: $e');
+              // Puedes mostrar una página de error o redirigir a otra página
+              return Container(
+                color: Colors.red,
+                child: Center(
+                  child: Text('Error al cargar la página de mapa'),
+                ),
+              );
+            }
           },
         ),
       ],

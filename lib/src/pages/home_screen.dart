@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-//import 'package:go_router/go_router.dart';
+import 'package:go_router/go_router.dart';
+import 'package:maia_app/monitoring/storage.dart';
 import 'package:maia_app/theme/app_theme.dart';
+import 'package:maia_app/widgets/InteractionTableWidget.dart';
 import 'package:maia_app/widgets/NextActivityWidget.dart';
 import 'package:maia_app/widgets/ScheduleTable.dart';
 import 'package:provider/provider.dart';
@@ -8,14 +10,14 @@ import 'package:maia_app/providers/api_provider.dart';
 import 'package:maia_app/models/schedule.dart';
 import 'dart:async';
 import 'package:intl/intl.dart';
-//import 'package:speech_to_text/speech_recognition_result.dart';
-//import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:maia_app/monitoring/informationGathering.dart';
 import 'package:maia_app/monitoring/interactionMiddelware.dart';
 import 'package:volume_watcher/volume_watcher.dart';
 import 'package:light/light.dart';
-//import 'package:maia_app/monitoring/preventiveSecurity.dart';
+import 'package:maia_app/monitoring/preventiveSecurity.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -35,7 +37,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final InteractionGathering _interactionGathering = InteractionGathering();
   final InteractionController _interactionController = InteractionController();
-  //final PreventiveSecurity _preventiveSecurity = PreventiveSecurity();
 
   //late BuildContext _ancestorContext;
   double currentVolume = 0.0;
@@ -57,6 +58,11 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _interactionGathering.addObserver(_interactionController);
     _interactionGathering.listen();
+    // Inicializa la base de datos
+    Storage.init();
+
+    _clockStream =
+        Stream<DateTime>.periodic(Duration(seconds: 1), (_) => DateTime.now());
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
         apiProvider = Provider.of<ApiProvider>(context, listen: false);
@@ -78,9 +84,13 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
 
-    VolumeWatcher.addListener(onVolumeChange);
-    initPlatformState();
-    startLightListening();
+    try {
+      //VolumeWatcher.addListener(onVolumeChange);
+      //initPlatformState();
+      //startLightListening();
+    } catch (e) {
+      print('verga: $e');
+    }
   }
 
   Future<void> initPlatformState() async {
@@ -102,25 +112,40 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    VolumeWatcher.removeListener(onVolumeChange as int?);
+    //VolumeWatcher.removeListener(onVolumeChange as int?);
     stopLightListening();
     super.dispose();
   }
 
   void onVolumeChange(double volume) {
     setState(() {
-      currentVolume = volume;
+      String direction;
+      if (volume > currentVolume) {
+        direction = "subir";
+      } else if (volume < currentVolume) {
+        direction = "bajar";
+      } else {
+        direction = "se mantuvo";
+      }
+      currentVolume = volume; // Actualizar el volumen actual
+      _interactionGathering.checkVolumeLevel(direction, volume);
     });
-    _interactionGathering.checkVolumeLevel(volume);
-    print("El volumen ha cambiado: $volume");
   }
 
   void onLightData(int luxValue) {
     setState(() {
-      _currentLuxValue = luxValue;
+      String lightChange;
+      if (luxValue > _currentLuxValue) {
+        lightChange = "subir";
+      } else if (luxValue < _currentLuxValue) {
+        lightChange = "bajar";
+      } else {
+        lightChange = "se mantuvo";
+      }
+      _currentLuxValue = luxValue; // Actualizar el valor actual de lux
+      _interactionGathering.checkLightLevel(lightChange, luxValue);
+      print("Lux value: $luxValue, Light change: $lightChange");
     });
-    _interactionGathering.checkLightLevel(luxValue);
-    print("Lux value: $luxValue");
   }
 
   void startLightListening() {
@@ -207,6 +232,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 const Center(
                   child: CircularProgressIndicator(),
                 ),
+              // SizedBox(
+
+              //   width: MediaQuery.of(context).size.width,
+              //   child: InteractionTable(),
+              // ),
               Text("Current Volume: $currentVolume"),
               Text("Current Lux Value: $_currentLuxValue"),
             ],

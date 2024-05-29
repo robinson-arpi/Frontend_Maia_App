@@ -16,20 +16,30 @@ class InteractionGathering {
     _observers.add(observer);
   }
 
-  void notifyObservers(String type, String action) {
+  void notifyObservers(String type, String action, double value) {
     for (var observer in _observers) {
-      observer.update(type, action, parameters);
+      observer.update(type, action, value, parameters);
     }
   }
 
-  void handleGUIClick(String order) {
-    notifyObservers("GUI", order);
-    _logInteraction("GUI", order, 1);
+  //Functions responsible for capturing interactions in the views
+  //User
+  void handleGUI(String order, double value) {
+    notifyObservers("GUI", order, value);
   }
 
-  void handleVoiceCommand(String order) {
-    notifyObservers("voice", order);
-    _logInteraction("voice", order, 1);
+  void handleVoiceCommand(String order, double value) {
+    notifyObservers("voice", order, value);
+  }
+
+  //Ambient
+  void checkLightLevel(String action, int luxValue) {
+    notifyObservers("ligth", action, luxValue as double);
+  }
+
+  //Aditionals
+  void checkVolumeLevel(String order, double volume) {
+    notifyObservers("volume", order, volume);
   }
 
   void changeListening() {
@@ -51,11 +61,11 @@ class InteractionGathering {
             print("\n-----------------------");
             print(val.recognizedWords.toLowerCase());
             if (val.recognizedWords.toLowerCase().contains("cómo llegar")) {
-              handleVoiceCommand("comoLlegar");
+              handleVoiceCommand("comoLlegar", 1);
             } else if (val.recognizedWords
                 .toLowerCase()
                 .contains("detalles de próxima actividad")) {
-              handleVoiceCommand("detailsOfNextActivity");
+              handleVoiceCommand("detailsOfNextActivity", 1);
             }
           },
         );
@@ -65,22 +75,5 @@ class InteractionGathering {
     } else {
       print("no se graba");
     }
-  }
-
-  void checkVolumeLevel(double volume) {
-    _logInteraction("volume", "change", volume);
-    if (volume > 0.8) {
-      _preventiveSecurity.showVolumeWarningToast();
-    }
-  }
-
-  void checkLightLevel(int luxValue) {
-    _logInteraction("ligth", "change", luxValue as double);
-  }
-
-  void _logInteraction(String type, String action, double valor) async {
-    final String timestamp =
-        DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
-    await Storage.insertInteraction(type, action, valor, timestamp);
   }
 }

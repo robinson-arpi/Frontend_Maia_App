@@ -1,0 +1,17 @@
+<DescriptiveModel>
+    <SystemState>
+        <ResponseTime max="200ms" current="100ms" />
+    </SystemState>
+    <EnvironmentState>
+        <LightIntensity min="0.1" max="1" current="0.9" />
+    </EnvironmentState>
+    <UserInteractions>
+        <UserStatus interactionType="GUI" priority="1" />
+        <UserStatus interactionType="voice" priority="2" />
+    </UserInteractions>
+    <AppState>
+        <BrightnessIntensity min="0.1" max="1" current="0.9" />
+        <Theme value="dark"/>
+        <VolumeIntensity min="0.1" max="0.8" current="0.8" />
+    </AppState>
+</DescriptiveModel>

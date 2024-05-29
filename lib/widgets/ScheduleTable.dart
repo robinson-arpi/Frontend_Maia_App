@@ -21,20 +21,33 @@ class ScheduleTable extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(20),
       margin: const EdgeInsets.all(10),
-      child: DataTable(
-        columns: const [
-          DataColumn(label: Text('Clase')),
-          DataColumn(label: Text('Aula')),
-          DataColumn(label: Text('Hora')),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Horario de Clases',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 20),
+          DataTable(
+            columns: const [
+              DataColumn(label: Text('Clase')),
+              DataColumn(label: Text('Aula')),
+              DataColumn(label: Text('Hora')),
+            ],
+            rows: apiProvider.schedule.map((classSchedule) {
+              return DataRow(cells: [
+                DataCell(Text('${classSchedule.className}')),
+                DataCell(Text('${classSchedule.classroomName}')),
+                DataCell(Text(
+                    '${classSchedule.startTime} - ${classSchedule.endTime}')),
+              ]);
+            }).toList(),
+          ),
         ],
-        rows: apiProvider.schedule.map((classSchedule) {
-          return DataRow(cells: [
-            DataCell(Text('${classSchedule.className}')),
-            DataCell(Text('${classSchedule.classroomName}')),
-            DataCell(
-                Text('${classSchedule.startTime} - ${classSchedule.endTime}')),
-          ]);
-        }).toList(),
       ),
     );
   }

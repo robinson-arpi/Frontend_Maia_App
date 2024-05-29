@@ -101,7 +101,7 @@ class NextActivityWidget extends StatelessWidget {
             },
           ),
           ElevatedButton(
-            onPressed: () => interactionGathering.handleGUIClick("goMap"),
+            onPressed: () => interactionGathering.handleGUI("goMap", 1),
             style: ButtonStyle(
               backgroundColor:
                   MaterialStateProperty.all<Color>(AppTheme.strongColorA),

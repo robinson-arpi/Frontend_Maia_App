@@ -24,6 +24,7 @@ dependencies:
   volume_watcher: ^2.0.1
   light: ^3.0.1
   fluttertoast: ^8.2.5
+  xml: ^6.5.0
 
 
 dev_dependencies:
@@ -39,9 +40,9 @@ flutter:
     - assets/images/splash.png
   
   fonts:
-    - family: FFMetaPro
+    - family: arialnarrow
       fonts:
-        - asset: assets/fonts/FFMetaProBold.TTF
+        - asset: assets/fonts/arialnarrow.ttf
           weight: 700
-        - asset: assets/fonts/FFMetaProLight.TTF
+        - asset: assets/fonts/arialnarrow_bold.ttf
           weight: 300

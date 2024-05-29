@@ -10,15 +10,15 @@ class AppTheme {
   // Text Themes
   static const TextTheme textTheme = TextTheme(
     headlineLarge: TextStyle(
-        fontFamily: 'FFMetaPro',
+        fontFamily: 'arialnarrow',
         fontSize: 24,
         fontWeight: FontWeight.bold,
         color: strongColorA),
     headlineMedium: TextStyle(
-        fontFamily: 'FFMetaPro', fontSize: 20, fontWeight: FontWeight.bold),
+        fontFamily: 'arialnarrow', fontSize: 20, fontWeight: FontWeight.bold),
     headlineSmall: TextStyle(
-        fontFamily: 'FFMetaPro', fontSize: 16, fontWeight: FontWeight.normal),
-    bodyLarge: TextStyle(fontFamily: 'FFMetaPro', fontSize: 16),
-    bodyMedium: TextStyle(fontFamily: 'FFMetaPro', fontSize: 14),
+        fontFamily: 'arialnarrow', fontSize: 16, fontWeight: FontWeight.normal),
+    bodyLarge: TextStyle(fontFamily: 'arialnarrow', fontSize: 16),
+    bodyMedium: TextStyle(fontFamily: 'arialnarrow', fontSize: 14),
   );
 }
