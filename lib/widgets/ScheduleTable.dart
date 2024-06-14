@@ -27,11 +27,11 @@ class ScheduleTable extends StatelessWidget {
           const Text(
             'Horario de Clases',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
           DataTable(
             columns: const [
               DataColumn(label: Text('Clase')),
@@ -43,7 +43,7 @@ class ScheduleTable extends StatelessWidget {
                 DataCell(Text('${classSchedule.className}')),
                 DataCell(Text('${classSchedule.classroomName}')),
                 DataCell(Text(
-                    '${classSchedule.startTime} - ${classSchedule.endTime}')),
+                    '${classSchedule.startTime}- ${classSchedule.endTime}')),
               ]);
             }).toList(),
           ),

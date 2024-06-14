@@ -12,7 +12,7 @@ abstract class Observer {
       String type, String action, double value, List<dynamic> parameters);
 }
 
-class InteractionController implements Observer {
+class InteractionMiddelware implements Observer {
   //stt.SpeechToText _speech = stt.SpeechToText();
   FlutterTts flutterTts = FlutterTts();
   PreventiveSecurity _preventiveSecurity = PreventiveSecurity();
@@ -24,13 +24,13 @@ class InteractionController implements Observer {
 
     switch (type) {
       case 'GUI':
-        _handleGUIAction(action, parameters);
+        GUIController(action, parameters);
         break;
       case 'voice':
-        _handleVoiceAction(action, parameters);
+        VoiceController(action, parameters);
         break;
       case 'volume':
-        _handleVolumeChange(parameters[0]);
+        SensorController(parameters[0]);
         break;
       case 'light':
         _handleLightChange(parameters[0]);
@@ -40,7 +40,7 @@ class InteractionController implements Observer {
     }
   }
 
-  void _handleGUIAction(String action, List<dynamic> parameters) {
+  void GUIController(String action, List<dynamic> parameters) {
     switch (action) {
       case 'goMap':
         BuildContext context = parameters[0];
@@ -57,7 +57,7 @@ class InteractionController implements Observer {
     }
   }
 
-  void _handleVoiceAction(String action, List<dynamic> parameters) {
+  void VoiceController(String action, List<dynamic> parameters) {
     switch (action) {
       case 'comoLlegar':
         BuildContext context = parameters[0];
@@ -73,7 +73,7 @@ class InteractionController implements Observer {
     }
   }
 
-  void _handleVolumeChange(double volume) {
+  void SensorController(double volume) {
     _preventiveSecurity.volumeSecurity(volume, 0.8);
 
     // print("El volumen ha cambiado: $volume");

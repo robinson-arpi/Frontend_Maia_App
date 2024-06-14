@@ -5,14 +5,14 @@ import 'package:maia_app/monitoring/storage.dart';
 import 'package:maia_app/monitoring/preventiveSecurity.dart';
 
 class InteractionGathering {
-  List<InteractionController> _observers = [];
+  List<InteractionMiddelware> _observers = [];
   stt.SpeechToText _speech = stt.SpeechToText();
   PreventiveSecurity _preventiveSecurity = PreventiveSecurity();
 
   bool _isListening = true;
   List<dynamic> parameters = [];
 
-  void addObserver(InteractionController observer) {
+  void addObserver(InteractionMiddelware observer) {
     _observers.add(observer);
   }
 
@@ -58,8 +58,6 @@ class InteractionGathering {
       if (available) {
         _speech.listen(
           onResult: (val) {
-            print("\n-----------------------");
-            print(val.recognizedWords.toLowerCase());
             if (val.recognizedWords.toLowerCase().contains("cómo llegar")) {
               handleVoiceCommand("comoLlegar", 1);
             } else if (val.recognizedWords

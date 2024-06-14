@@ -36,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late Stream<DateTime> _clockStream;
 
   final InteractionGathering _interactionGathering = InteractionGathering();
-  final InteractionController _interactionController = InteractionController();
+  final InteractionMiddelware _interactionController = InteractionMiddelware();
 
   //late BuildContext _ancestorContext;
   double currentVolume = 0.0;
@@ -200,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
         appBar: AppBar(
           title: Text(
             "Hola, ${apiProvider.name}",
-            style: Theme.of(context).textTheme.headline6,
+            style: Theme.of(context).textTheme.headlineLarge,
           ),
           centerTitle: true,
           automaticallyImplyLeading: false,
@@ -237,8 +237,8 @@ class _HomeScreenState extends State<HomeScreen> {
               //   width: MediaQuery.of(context).size.width,
               //   child: InteractionTable(),
               // ),
-              Text("Current Volume: $currentVolume"),
-              Text("Current Lux Value: $_currentLuxValue"),
+              //Text("Current Volume: $currentVolume"),
+              //Text("Current Lux Value: $_currentLuxValue"),
             ],
           ),
         ),

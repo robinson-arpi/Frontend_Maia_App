@@ -23,7 +23,10 @@ class MapScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.softColorA,
       appBar: AppBar(
-        title: const Text('Indicaciones'),
+        title: Text(
+          'Indicaciones',
+          style: Theme.of(context).textTheme.headlineLarge,
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -43,12 +46,16 @@ class MapScreen extends StatelessWidget {
                   for (var i = 0; i < paths.length; i++) {
                     var path = paths[i];
                     if (i == 0) {
-                      instructionWidgets.add(Text('${path.second}'));
+                      instructionWidgets.add(Text('${path.second}',
+                          style: TextStyle(fontSize: 18)));
                     } else if (i == paths.length - 1) {
-                      instructionWidgets.add(Text('${path.first?.name}'));
+                      instructionWidgets.add(Text('${path.first?.name}',
+                          style: TextStyle(fontSize: 18)));
                     } else {
-                      instructionWidgets.add(Text('${path.first?.name}'));
-                      instructionWidgets.add(Text('${path.second}'));
+                      instructionWidgets.add(Text('${path.first?.name}',
+                          style: TextStyle(fontSize: 18)));
+                      instructionWidgets.add(Text('${path.second}',
+                          style: TextStyle(fontSize: 18)));
                     }
                   }
 
@@ -113,7 +120,8 @@ class MapScreen extends StatelessWidget {
                                         // No se puede cambiar el estado aquí porque este widget es Stateless
                                       },
                                     ),
-                                    Text('Estoy en mi aula'),
+                                    Text('Estoy en mi aula',
+                                        style: TextStyle(fontSize: 18)),
                                   ],
                                 ),
                               ],
